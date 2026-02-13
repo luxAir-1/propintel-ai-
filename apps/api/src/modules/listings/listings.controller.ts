@@ -9,7 +9,7 @@ import {
   Query,
   ForbiddenException,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { ListingsService } from './listings.service';
 import { SubscriptionsService } from '../subscriptions/subscriptions.service';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
@@ -24,10 +24,6 @@ export class ListingsController {
   ) {}
 
   @Post()
-  @ApiOperation({
-    summary: 'Create a new listing',
-    description: 'Subject to subscription limits. Check /subscriptions/limits for usage.'
-  })
   async create(@CurrentUser('sub') userId: string, @Body() data: any) {
     // Check usage limits
     const canCreate = await this.subscriptionsService.canCreateListing(userId);
@@ -42,7 +38,6 @@ export class ListingsController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'List user listings with pagination' })
   async list(
     @CurrentUser('sub') userId: string,
     @Query('skip') skip?: number,
@@ -63,19 +58,16 @@ export class ListingsController {
   }
 
   @Get('search')
-  @ApiOperation({ summary: 'Search listings by criteria' })
   async search(@CurrentUser('sub') userId: string, @Query() criteria: any) {
     return this.listingsService.search(userId, criteria);
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get listing details' })
   async getOne(@CurrentUser('sub') userId: string, @Param('id') id: string) {
     return this.listingsService.findById(userId, id);
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Update listing' })
   async update(
     @CurrentUser('sub') userId: string,
     @Param('id') id: string,
@@ -85,7 +77,6 @@ export class ListingsController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Delete listing' })
   async delete(@CurrentUser('sub') userId: string, @Param('id') id: string) {
     return this.listingsService.delete(userId, id);
   }
