@@ -6,20 +6,37 @@ import {
   Delete,
   Param,
   Body,
+  ForbiddenException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AlertsService } from './alerts.service';
+import { SubscriptionsService } from '../subscriptions/subscriptions.service';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 
 @ApiTags('Alerts')
 @ApiBearerAuth()
 @Controller('alerts')
 export class AlertsController {
-  constructor(private alertsService: AlertsService) {}
+  constructor(
+    private alertsService: AlertsService,
+    private subscriptionsService: SubscriptionsService,
+  ) {}
 
   @Post()
-  @ApiOperation({ summary: 'Create a new alert' })
+  @ApiOperation({
+    summary: 'Create a new alert',
+    description: 'Subject to subscription limits. Check /subscriptions/limits for usage.'
+  })
   async create(@CurrentUser('sub') userId: string, @Body() data: any) {
+    // Check usage limits
+    const canCreate = await this.subscriptionsService.canCreateAlert(userId);
+    if (!canCreate) {
+      const limits = await this.subscriptionsService.getUsageLimits(userId);
+      throw new ForbiddenException(
+        `Alert limit reached (${limits.maxAlerts}). Please upgrade your plan.`
+      );
+    }
+
     return this.alertsService.createAlert(userId, data);
   }
 

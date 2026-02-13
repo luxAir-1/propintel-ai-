@@ -7,20 +7,37 @@ import {
   Param,
   Body,
   Query,
+  ForbiddenException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { ListingsService } from './listings.service';
+import { SubscriptionsService } from '../subscriptions/subscriptions.service';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 
 @ApiTags('Listings')
 @ApiBearerAuth()
 @Controller('listings')
 export class ListingsController {
-  constructor(private listingsService: ListingsService) {}
+  constructor(
+    private listingsService: ListingsService,
+    private subscriptionsService: SubscriptionsService,
+  ) {}
 
   @Post()
-  @ApiOperation({ summary: 'Create a new listing' })
+  @ApiOperation({
+    summary: 'Create a new listing',
+    description: 'Subject to subscription limits. Check /subscriptions/limits for usage.'
+  })
   async create(@CurrentUser('sub') userId: string, @Body() data: any) {
+    // Check usage limits
+    const canCreate = await this.subscriptionsService.canCreateListing(userId);
+    if (!canCreate) {
+      const limits = await this.subscriptionsService.getUsageLimits(userId);
+      throw new ForbiddenException(
+        `Listing limit reached (${limits.maxListings}). Please upgrade your plan.`
+      );
+    }
+
     return this.listingsService.create(userId, data);
   }
 
