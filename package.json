@@ -3,13 +3,15 @@
   "version": "0.1.0",
   "description": "AI Real Estate Intelligence Platform",
   "private": true,
+  "packageManager": "pnpm@9.0.0",
   "workspaces": [
     "apps/*",
     "packages/*"
   ],
   "scripts": {
     "dev": "turbo run dev --parallel",
-    "build": "turbo run build",
+    "build": "pnpm -r build",
+    "start": "pnpm --filter @propintel/api start",
     "lint": "turbo run lint",
     "type-check": "turbo run type-check",
     "clean": "turbo run clean && rm -rf node_modules"
