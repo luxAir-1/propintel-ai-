@@ -18,14 +18,15 @@ model extensions_pgvector {
 
 // Core User & Auth
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String
-  password  String   // bcrypt hashed
-  language  String   @default("en")
-  timezone  String   @default("America/New_York")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                String   @id @default(cuid())
+  email             String   @unique
+  name              String
+  password          String   // bcrypt hashed
+  language          String   @default("en")
+  timezone          String   @default("America/New_York")
+  stripeCustomerId  String?  @unique // Stripe customer ID
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   // Relations
   subscription   Subscription?
@@ -39,6 +40,7 @@ model User {
   usageLogs      UsageLogs[]
 
   @@index([email])
+  @@index([stripeCustomerId])
 }
 
 // Subscription Management

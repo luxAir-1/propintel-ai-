@@ -1,13 +1,19 @@
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, NestExpressApplication } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet from 'helmet';
+import { raw } from 'express';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    rawBody: true,
+  });
+
+  // Raw body middleware for webhooks (before body parser)
+  app.use('/webhooks', raw({ type: 'application/json' }));
 
   // Security
   app.use(helmet());
@@ -39,18 +45,19 @@ async function bootstrap() {
   // Swagger documentation
   const config = new DocumentBuilder()
     .setTitle('PropIntel API')
-    .setDescription('AI Real Estate Investment Intelligence API')
+    .setDescription('AI Real Estate Investment Intelligence API with Stripe billing integration')
     .setVersion('1.0.0')
     .addBearerAuth()
     .addServer(process.env.API_URL || 'http://localhost:3001', 'Development')
     .addTag('Auth', 'Authentication endpoints')
     .addTag('Users', 'User management')
-    .addTag('Subscriptions', 'Billing & subscriptions')
+    .addTag('Subscriptions', 'Billing & subscriptions (Stripe integrated)')
     .addTag('Listings', 'Property listings')
     .addTag('Scoring', 'Deal scoring & analysis')
     .addTag('Reports', 'PDF report generation')
     .addTag('Alerts', 'User alerts & notifications')
     .addTag('Health', 'Health check endpoints')
+    .addTag('Webhooks', 'Stripe webhook handlers')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
