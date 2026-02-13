@@ -8,4 +8,4 @@ cmds = ['corepack enable', 'cd /app/apps/api && pnpm install --no-frozen-lockfil
 cmds = ['cd /app/apps/api && pnpm run build']
 
 [start]
-cmd = 'pnpm run start --filter=@propintel/api'
+cmd = 'cd /app/apps/api && node dist/main.js'
