@@ -1,14 +1,4 @@
 {
   "buildCommand": "pnpm run build",
-  "installCommand": "pnpm install",
-  "env": {
-    "NEXT_PUBLIC_API_URL": {
-      "description": "Backend API URL",
-      "example": "https://api.example.com"
-    },
-    "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY": {
-      "description": "Stripe publishable key (starts with pk_)",
-      "example": "pk_live_..."
-    }
-  }
+  "installCommand": "pnpm install"
 }
