@@ -2,11 +2,11 @@
   "$schema": "https://railway.app/railroad.schema.json",
   "build": {
     "builder": "NIXPACKS",
-    "buildCommand": "cd ../../ && pnpm run build --filter=@propintel/worker"
+    "buildCommand": "corepack enable && pnpm install --no-frozen-lockfile && pnpm run build --filter=@propintel/worker"
   },
   "deploy": {
     "numReplicas": 1,
-    "startCommand": "cd ../../ && pnpm run start --filter=@propintel/worker",
+    "startCommand": "pnpm run start --filter=@propintel/worker",
     "restartPolicyMaxRetries": 5
   }
 }
