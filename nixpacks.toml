@@ -2,10 +2,10 @@
 nixPkgs = ['nodejs', 'pnpm']
 
 [phases.install]
-cmds = ['corepack enable', 'pnpm install --filter=@propintel/api --no-frozen-lockfile']
+cmds = ['corepack enable', 'cd /app/apps/api && pnpm install --no-frozen-lockfile']
 
 [phases.build]
-cmds = ['pnpm run build --filter=@propintel/api']
+cmds = ['cd /app/apps/api && pnpm run build']
 
 [start]
 cmd = 'pnpm run start --filter=@propintel/api'
