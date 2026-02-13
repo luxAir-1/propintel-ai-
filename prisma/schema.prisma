@@ -1,0 +1,251 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enable pgvector for embeddings
+model extensions_pgvector {
+  // This is a placeholder to enable the pgvector extension
+  // Run: CREATE EXTENSION IF NOT EXISTS vector;
+}
+
+// Core User & Auth
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String   // bcrypt hashed
+  language  String   @default("en")
+  timezone  String   @default("America/New_York")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  subscription   Subscription?
+  searchProfiles SearchProfile[]
+  listings       Listing[]
+  scores         PropertyScore[]
+  financials     PropertyFinancials[]
+  reports        Report[]
+  alerts         Alert[]
+  auditLogs      AuditLog[]
+  usageLogs      UsageLogs[]
+
+  @@index([email])
+}
+
+// Subscription Management
+model Subscription {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan                  String   @default("investor")
+  status                String   @default("active") // active, canceled, past_due
+  stripeCustomerId      String   @unique
+  stripeSubscriptionId  String   @unique
+  currentPeriodStart    DateTime
+  currentPeriodEnd      DateTime
+  canceledAt            DateTime?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  // Relations
+  invoices DeliveryLog[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+// Search Profiles (Saved searches for users)
+model SearchProfile {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name         String
+  criteria     Json // SearchCriteria
+  resultsCount Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId])
+  @@index([isActive])
+}
+
+// Property Listings
+model Listing {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  address       String
+  city          String
+  state         String
+  zipCode       String
+  price         Int
+  beds          Int
+  baths         Int
+  sqft          Int
+  listingType   String   @default("single_family") // single_family, multi_family, commercial, land
+  imageUrl      String?
+  externalId    String?  // MLS ID, Zillow ID, etc.
+  description   String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  score      PropertyScore?
+  financials PropertyFinancials?
+  reports    Report[]
+
+  @@unique([userId, externalId])
+  @@index([userId])
+  @@index([city])
+  @@index([state])
+  @@index([price])
+  @@index([createdAt])
+}
+
+// AI Property Scores
+model PropertyScore {
+  id           String   @id @default(cuid())
+  listingId    String   @unique
+  listing      Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  userId       String
+  score        Int      // 0-100
+  summary      String   @db.Text
+  strengths    String[] @default([])
+  weaknesses   String[] @default([])
+  modelVersion String   @default("v1")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId])
+  @@index([score])
+}
+
+// Property Financial Analysis
+model PropertyFinancials {
+  id                  String   @id @default(cuid())
+  listingId           String   @unique
+  listing             Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  userId              String
+  purchasePrice       Int
+  downPaymentPercent  Int
+  loanAmount          Int
+  interestRate        Float    @db.Decimal(5, 3)
+  loanTerm            Int
+  monthlyPayment      Int
+  rentalIncome        Int
+  vacancyRate         Int
+  monthlyExpenses     Int
+  cashFlow            Int
+  capRate             Float    @db.Decimal(5, 2)
+  roiPercent          Float    @db.Decimal(5, 2)
+  projections         Json?    // 5-year projections
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([userId])
+  @@index([capRate])
+  @@index([roiPercent])
+}
+
+// Generated Reports
+model Report {
+  id        String   @id @default(cuid())
+  userId    String
+  listingId String
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  title     String
+  status    String   @default("draft") // draft, generating, ready, expired
+  s3Url     String?
+  signedUrl String?
+  expiresAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([listingId])
+  @@index([status])
+}
+
+// User Alerts
+model Alert {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  criteria  Json     // AlertCriteria
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([isActive])
+}
+
+// Delivery Logs (Email, SMS, etc.)
+model DeliveryLog {
+  id             String   @id @default(cuid())
+  subscriptionId String
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  channel        String   @default("email") // email, sms, push
+  recipient      String
+  status         String   @default("sent") // sent, failed, bounced
+  metadata       Json?
+  createdAt      DateTime @default(now())
+
+  @@index([subscriptionId])
+  @@index([status])
+}
+
+// Usage Logs (For billing & analytics)
+model UsageLogs {
+  id       String   @id @default(cuid())
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action   String   // analysis, report_generated, alert_sent, etc.
+  metadata Json?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+// Audit Logs (Compliance & Security)
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action    String
+  resource  String
+  changes   Json?
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+// Country Configs (For global expansion)
+model CountryConfig {
+  id            String   @id @default(cuid())
+  country       String   @unique
+  currency      String
+  taxRate       Float    @db.Decimal(5, 2)
+  disclosures   Json     // Localized regulations
+  propertyTypes Json     // Supported property types
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([country])
+}
