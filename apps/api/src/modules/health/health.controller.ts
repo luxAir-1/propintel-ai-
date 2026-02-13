@@ -21,4 +21,11 @@ export class HealthController {
   async readiness() {
     return this.healthService.readiness();
   }
+
+  @Public()
+  @Get('queues')
+  @ApiOperation({ summary: 'Get queue status' })
+  async queueStatus() {
+    return this.healthService.getQueueStatus();
+  }
 }

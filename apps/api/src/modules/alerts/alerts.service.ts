@@ -1,9 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '@/common/prisma/prisma.service';
+import { QueueService } from '../queue/queue.service';
 
 @Injectable()
 export class AlertsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private queueService: QueueService,
+  ) {}
 
   async createAlert(userId: string, data: any) {
     return this.prisma.alert.create({
@@ -56,9 +60,13 @@ export class AlertsService {
     });
   }
 
-  async checkAlerts(listing: any): Promise<string[]> {
-    // TODO: Check listing against all active user alerts
-    // Return list of alert IDs that match
-    return [];
+  async checkAlerts(listingId: string, userId: string): Promise<string> {
+    // Dispatch alert matching job to BullMQ queue
+    const jobId = await this.queueService.dispatchAlertJob(listingId, userId);
+    return jobId;
+  }
+
+  async getJobStatus(jobId: string) {
+    return this.queueService.getJobStatus('alerts', jobId);
   }
 }

@@ -19,6 +19,7 @@ import { FinancialsModule } from './modules/financials/financials.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { AlertsModule } from './modules/alerts/alerts.module';
 import { HealthModule } from './modules/health/health.module';
+import { QueueModule } from './modules/queue/queue.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { HealthModule } from './modules/health/health.module';
 
     // Shared
     PrismaModule,
+    QueueModule,
 
     // Feature modules
     AuthModule,

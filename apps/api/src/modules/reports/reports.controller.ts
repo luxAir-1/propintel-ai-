@@ -32,4 +32,10 @@ export class ReportsController {
   ) {
     return this.reportsService.getReport(userId, reportId);
   }
+
+  @Get('job/:jobId')
+  @ApiOperation({ summary: 'Get PDF generation job status' })
+  async getJobStatus(@Param('jobId') jobId: string) {
+    return this.reportsService.getJobStatus(jobId);
+  }
 }

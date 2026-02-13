@@ -1,24 +1,32 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '@/common/prisma/prisma.service';
+import { QueueService } from '../queue/queue.service';
 
 @Injectable()
 export class ScoringService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private queueService: QueueService,
+  ) {}
 
   async scoreProperty(userId: string, listingId: string) {
-    // TODO: Integrate with BullMQ queue
-    // Dispatch to scoring worker
-    // For now, return mock score
+    // Verify listing exists and belongs to user
+    const listing = await this.prisma.listing.findUnique({
+      where: { id: listingId },
+    });
 
-    const score = Math.round(Math.random() * 100);
+    if (!listing || listing.userId !== userId) {
+      throw new NotFoundException('Listing not found');
+    }
+
+    // Dispatch to BullMQ scoring queue
+    const jobId = await this.queueService.dispatchScoringJob(listingId, userId);
 
     return {
+      jobId,
       listingId,
-      score,
-      summary: `Deal score of ${score}/100 based on financial metrics and market analysis.`,
-      strengths: ['Good location', 'Strong rental income'],
-      weaknesses: ['High vacancy risk'],
       status: 'queued',
+      message: 'Property is being scored. Check status with jobId.',
     };
   }
 
@@ -29,9 +37,13 @@ export class ScoringService {
     });
 
     if (!listing || listing.userId !== userId) {
-      throw new Error('Listing not found');
+      throw new NotFoundException('Listing not found');
     }
 
-    return listing.score;
+    return listing.score || null;
+  }
+
+  async getJobStatus(jobId: string) {
+    return this.queueService.getJobStatus('scoring', jobId);
   }
 }

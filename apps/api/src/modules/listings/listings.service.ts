@@ -2,15 +2,22 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  Logger,
 } from '@nestjs/common';
 import { PrismaService } from '@/common/prisma/prisma.service';
+import { QueueService } from '../queue/queue.service';
 
 @Injectable()
 export class ListingsService {
-  constructor(private prisma: PrismaService) {}
+  private logger = new Logger(ListingsService.name);
+
+  constructor(
+    private prisma: PrismaService,
+    private queueService: QueueService,
+  ) {}
 
   async create(userId: string, data: any) {
-    return this.prisma.listing.create({
+    const listing = await this.prisma.listing.create({
       data: {
         ...data,
         userId,
@@ -20,6 +27,19 @@ export class ListingsService {
         financials: true,
       },
     });
+
+    // Dispatch scoring job when listing is created
+    try {
+      await this.queueService.dispatchScoringJob(listing.id, userId);
+      // Dispatch alert check job
+      await this.queueService.dispatchAlertJob(listing.id, userId);
+      this.logger.log(`📨 Queued scoring and alert check for listing ${listing.id}`);
+    } catch (error) {
+      this.logger.error(`Failed to queue jobs for listing ${listing.id}:`, error);
+      // Don't fail listing creation if queue dispatch fails
+    }
+
+    return listing;
   }
 
   async findById(userId: string, listingId: string) {

@@ -1,15 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '@/common/prisma/prisma.service';
+import { QueueService } from '../queue/queue.service';
 
 @Injectable()
 export class ReportsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private queueService: QueueService,
+  ) {}
 
   async generateReport(userId: string, listingId: string) {
-    // TODO: Integrate with BullMQ report queue
-    // Dispatch to PDF worker
-    // For now, return mock report
-
     const listing = await this.prisma.listing.findUnique({
       where: { id: listingId },
     });
@@ -18,6 +18,7 @@ export class ReportsService {
       throw new NotFoundException('Listing not found');
     }
 
+    // Create report record
     const report = await this.prisma.report.create({
       data: {
         userId,
@@ -27,8 +28,12 @@ export class ReportsService {
       },
     });
 
+    // Dispatch to BullMQ PDF generation queue
+    const jobId = await this.queueService.dispatchPDFJob(report.id, listingId, userId);
+
     return {
       reportId: report.id,
+      jobId,
       status: 'generating',
       message: 'Report is being generated. You will receive an email when ready.',
     };
@@ -66,5 +71,9 @@ export class ReportsService {
   private generateSignedUrl(s3Url: string): string {
     // TODO: Generate actual signed URL with Cloudflare R2
     return s3Url;
+  }
+
+  async getJobStatus(jobId: string) {
+    return this.queueService.getJobStatus('reports', jobId);
   }
 }

@@ -26,4 +26,10 @@ export class ScoringController {
   ) {
     return this.scoringService.getScore(userId, listingId);
   }
+
+  @Get('job/:jobId')
+  @ApiOperation({ summary: 'Get scoring job status' })
+  async getJobStatus(@Param('jobId') jobId: string) {
+    return this.scoringService.getJobStatus(jobId);
+  }
 }
