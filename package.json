@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "dev": "turbo run dev --parallel",
-    "build": "pnpm -r build",
+    "build": "pnpm --filter @propintel/api run build",
     "start": "pnpm --filter @propintel/api start",
     "lint": "turbo run lint",
     "type-check": "turbo run type-check",
