@@ -108,7 +108,7 @@ export class ListingsService {
   }
 
   async update(userId: string, listingId: string, data: any) {
-    const listing = await this.findById(userId, listingId);
+    await this.findById(userId, listingId);
 
     return this.prisma.listing.update({
       where: { id: listingId },
@@ -124,7 +124,7 @@ export class ListingsService {
   }
 
   async delete(userId: string, listingId: string) {
-    const listing = await this.findById(userId, listingId);
+    await this.findById(userId, listingId);
 
     return this.prisma.listing.delete({
       where: { id: listingId },

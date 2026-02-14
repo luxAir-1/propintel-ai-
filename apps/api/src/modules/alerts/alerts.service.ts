@@ -40,7 +40,7 @@ export class AlertsService {
   }
 
   async updateAlert(userId: string, alertId: string, data: any) {
-    const alert = await this.getAlert(userId, alertId);
+    await this.getAlert(userId, alertId);
 
     return this.prisma.alert.update({
       where: { id: alertId },
@@ -53,7 +53,7 @@ export class AlertsService {
   }
 
   async deleteAlert(userId: string, alertId: string) {
-    const alert = await this.getAlert(userId, alertId);
+    await this.getAlert(userId, alertId);
 
     return this.prisma.alert.delete({
       where: { id: alertId },

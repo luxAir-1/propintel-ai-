@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Queue, Worker } from 'bullmq';
-import { RedisService } from './redis.service';
+import { Queue } from 'bullmq';
 
 export interface JobData {
   userId: string;
@@ -16,7 +15,7 @@ export class QueueService {
   private reportQueue: Queue | null = null;
   private alertQueue: Queue | null = null;
 
-  constructor(private redisService: RedisService) {
+  constructor() {
     this.initializeQueues();
   }
 
@@ -57,7 +56,7 @@ export class QueueService {
       });
 
       this.logger.log(`📤 Dispatched scoring job ${job.id} for listing ${listingId}`);
-      return job.id;
+      return job.id!;
     } catch (error) {
       this.logger.error('Failed to dispatch scoring job:', error);
       throw error;
@@ -79,7 +78,7 @@ export class QueueService {
       });
 
       this.logger.log(`📤 Dispatched PDF job ${job.id} for report ${reportId}`);
-      return job.id;
+      return job.id!;
     } catch (error) {
       this.logger.error('Failed to dispatch PDF job:', error);
       throw error;
@@ -101,7 +100,7 @@ export class QueueService {
       });
 
       this.logger.log(`📤 Dispatched alert job ${job.id} for listing ${listingId}`);
-      return job.id;
+      return job.id!;
     } catch (error) {
       this.logger.error('Failed to dispatch alert job:', error);
       throw error;
@@ -122,14 +121,14 @@ export class QueueService {
       if (!job) return null;
 
       const state = await job.getState();
-      const progress = job.progress();
+      const progress = job.progress;
 
       return {
         id: job.id,
         state,
         progress,
         data: job.data,
-        returnValue: job.returnValue,
+        returnValue: job.returnvalue,
         failedReason: job.failedReason,
         attempts: job.attemptsMade,
         maxAttempts: job.opts.attempts,

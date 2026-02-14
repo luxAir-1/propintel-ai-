@@ -50,6 +50,7 @@ export class WebhookService {
       },
       create: {
         userId: user.id,
+        stripeCustomerId: session.customer as string,
         stripeSubscriptionId: subscriptionId,
         status: 'active',
         plan: this.getPlanFromMetadata(session.metadata),

@@ -38,7 +38,7 @@ import { QueueModule } from './modules/queue/queue.module';
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'your-secret-key',
       signOptions: {
-        expiresIn: process.env.JWT_EXPIRY || '3600s',
+        expiresIn: process.env.JWT_EXPIRY || '3600s' as any,
       },
     }),
 

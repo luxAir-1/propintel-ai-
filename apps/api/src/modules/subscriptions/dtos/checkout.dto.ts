@@ -8,7 +8,7 @@ export class CreateCheckoutSessionDto {
   })
   @IsString()
   @IsNotEmpty()
-  priceId: string;
+  priceId!: string;
 
   @ApiProperty({
     description: 'URL to redirect to on success',
@@ -16,7 +16,7 @@ export class CreateCheckoutSessionDto {
   })
   @IsUrl()
   @IsNotEmpty()
-  successUrl: string;
+  successUrl!: string;
 
   @ApiProperty({
     description: 'URL to redirect to on cancel',
@@ -24,5 +24,5 @@ export class CreateCheckoutSessionDto {
   })
   @IsUrl()
   @IsNotEmpty()
-  cancelUrl: string;
+  cancelUrl!: string;
 }
