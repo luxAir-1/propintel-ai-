@@ -5,7 +5,7 @@
     "buildCommand": "corepack enable && pnpm run build"
   },
   "deploy": {
-    "startCommand": "pnpm run start --filter=@propintel/api",
+    "startCommand": "node dist/main.js",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 5
   }
