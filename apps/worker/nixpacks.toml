@@ -1,0 +1,12 @@
+[phases.setup]
+nixPkgs = ['nodejs', 'pnpm']
+
+[phases.install]
+cmds = ['corepack enable', 'cp -r /app/prisma /app/apps/worker/', 'cd /app/apps/worker && pnpm install --no-frozen-lockfile --ignore-workspace', 'cd /app/apps/worker && pnpm exec prisma generate']
+
+[phases.build]
+cmds = ['cd /app/apps/worker && pnpm run build']
+cacheDirectories = ['/root/.local/share/pnpm/store/v3']
+
+[start]
+cmd = 'cd /app/apps/worker && node dist/main.js'
