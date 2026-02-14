@@ -35,11 +35,6 @@ export class PDFWorker {
     this.worker = new Worker('reports', this.processJob.bind(this), {
       connection: redis,
       concurrency: 2,
-      settings: {
-        retryProcessDelay: 5000,
-        maxStalledCount: 2,
-        lockDuration: 60000,
-      },
     });
 
     this.worker.on('completed', (job) => {

@@ -66,7 +66,7 @@ select {
 }
 
 .luxury-gradient {
-  @apply bg-gradient-to-br from-slate-900 via-slate-850 to-slate-950;
+  @apply bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950;
 }
 
 .luxury-text {
@@ -108,8 +108,9 @@ select {
 }
 
 /* Animation delays for staggered reveals */
-@for $i from 1 through 6 {
-  .animate-delay-#{$i * 100} {
-    animation-delay: calc(#{$i * 100}ms);
-  }
-}
+.animate-delay-100 { animation-delay: 100ms; }
+.animate-delay-200 { animation-delay: 200ms; }
+.animate-delay-300 { animation-delay: 300ms; }
+.animate-delay-400 { animation-delay: 400ms; }
+.animate-delay-500 { animation-delay: 500ms; }
+.animate-delay-600 { animation-delay: 600ms; }

@@ -64,8 +64,8 @@ export class UsersService {
 
     return {
       userId,
-      totalActions: stats.reduce((sum, s) => sum + s._count, 0),
-      byAction: stats.map(s => ({
+      totalActions: stats.reduce((sum: number, s: { action: string; _count: number }) => sum + s._count, 0),
+      byAction: stats.map((s: { action: string; _count: number }) => ({
         action: s.action,
         count: s._count,
       })),

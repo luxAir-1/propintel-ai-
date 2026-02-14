@@ -1,5 +1,5 @@
 import { Worker, Queue } from 'bullmq';
-import { Anthropic } from '@anthropic-ai/sdk';
+import Anthropic from '@anthropic-ai/sdk';
 import redis from '@/config/redis';
 import prisma from '@/config/prisma';
 import logger from '@/config/logger';
@@ -26,11 +26,6 @@ export class ScoringWorker {
     this.worker = new Worker('scoring', this.processJob.bind(this), {
       connection: redis,
       concurrency: 3,
-      settings: {
-        retryProcessDelay: 5000,
-        maxStalledCount: 3,
-        lockDuration: 30000,
-      },
     });
 
     this.worker.on('completed', (job) => {

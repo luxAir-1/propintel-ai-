@@ -7,7 +7,7 @@ prisma
   .then(() => {
     console.log('✅ Prisma connected to database');
   })
-  .catch((error) => {
+  .catch((error: unknown) => {
     console.error('❌ Prisma connection error:', error);
     process.exit(1);
   });

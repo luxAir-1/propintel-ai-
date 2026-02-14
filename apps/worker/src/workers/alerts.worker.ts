@@ -32,11 +32,6 @@ export class AlertsWorker {
     this.worker = new Worker('alerts', this.processJob.bind(this), {
       connection: redis,
       concurrency: 5,
-      settings: {
-        retryProcessDelay: 3000,
-        maxStalledCount: 2,
-        lockDuration: 20000,
-      },
     });
 
     this.worker.on('completed', (job) => {

@@ -1,4 +1,3 @@
-import React from "react";
 
 export interface ScoreBadgeProps {
   score: number; // 0-100
