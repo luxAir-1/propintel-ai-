@@ -1,3 +1,4 @@
+# PropIntel AI Worker Service
 [phases.setup]
 nixPkgs = ['nodejs', 'pnpm']
 
